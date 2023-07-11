@@ -1,3 +1,4 @@
+from pprint import pprint
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -17,6 +18,7 @@ class Pizza_Management:
     management Class
     """
     def __init__(self):
+        self.ingredients_kg_price = []
         self.margherita_dictionary = {
             'flour' : 0.35,
             'east' : 0.003,
@@ -28,22 +30,27 @@ class Pizza_Management:
             'oregano' : 0.003
             }
 
-        def calculate_pizza_cost(self):
+    def calculate_pizza_cost(self):
+        self.ingredients_kg_price = SHEET.worksheet('ingredients kg price').get_all_values()
+        ingredients_kg_price_dict = {key: float(value) for key, value in zip (self.ingredients_kg_price[0], self.ingredients_kg_price[1])}
+        return ingredients_kg_price_dict
+        if 
 
-        def calculate_shopping_list_cost(self):
+    # def calculate_shopping_list_cost(self):
 
-        def calculate_pizza_price(self):
+    # def calculate_pizza_price(self):
 
-        def calculate_day_profit(self):
+    # def calculate_day_profit(self):
 
-        def calculate_ingredients_stock(self)
+    # def calculate_ingredients_stock(self)
 
-        def generate_shopping_list(self):
+    # def generate_shopping_list(self):
 
         
 
          
-        
+test = Pizza_Management()
+pprint(test.calculate_pizza_cost())
 
 # pizza_sales = SHEET.worksheet('pizza sales')
 # data = pizza_sales.get_all_values()
