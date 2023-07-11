@@ -12,6 +12,39 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('master_pizza')
 
-pizza_sales = SHEET.worksheet('pizza sales')
-data = pizza_sales.get_all_values()
-print(data)
+class Pizza_Management:
+    """
+    management Class
+    """
+    def __init__(self):
+        self.margherita_dictionary = {
+            'flour' : 0.35,
+            'east' : 0.003,
+            'salt' : 0.007,
+            'sugar' : 0.010,
+            'tomato sauce': 0.5,
+            'cheese' : 0.18,
+            'tomatoes' : 0.03,
+            'oregano' : 0.003
+            }
+
+        def calculate_pizza_cost(self):
+
+        def calculate_shopping_list_cost(self):
+
+        def calculate_pizza_price(self):
+
+        def calculate_day_profit(self):
+
+        def calculate_ingredients_stock(self)
+
+        def generate_shopping_list(self):
+
+        
+
+         
+        
+
+# pizza_sales = SHEET.worksheet('pizza sales')
+# data = pizza_sales.get_all_values()
+# print(data)
