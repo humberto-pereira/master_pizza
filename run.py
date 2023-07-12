@@ -100,6 +100,19 @@ class Pizza_Management:
         # Add the fixed cost per pizza and a 30% profit to the cost of each pizza and round the price to two decimal places
         pizzas_price = {pizza_name: round(pizza_cost + fixed_cost_per_pizza +(pizza_cost + fixed_cost_per_pizza) * 0.35, 1) for pizza_name, pizza_cost in pizzas_cost.items()}
         return pizzas_price
+    
+    # This method is reusable, it takes two arguments 'sheet_name' which is the name of the worksheet and 'data_dict' a dictionary containing the data to be written
+    def send_dict_to_sheet(self, sheet_name, data_dict):
+        """
+        Send the values of a dictionary to the specified worksheet
+        """
+        # Generate the data to be written
+        data = [value for key, value in data_dict.items()]
+        # Get the worksheet
+        worksheet = SHEET.worksheet(sheet_name)
+        # Append the data to the next available row
+        worksheet.append_row(data)
+
 
 
     # def calculate_day_profit(self):
@@ -112,8 +125,7 @@ class Pizza_Management:
 
          
 test = Pizza_Management()
+pizzas_price = test.calculate_pizza_price()
+test.send_dict_to_sheet('pizza selling price', pizzas_price)
 pprint(test.calculate_pizza_price())
 
-# pizza_sales = SHEET.worksheet('pizza sales')
-# data = pizza_sales.get_all_values()
-# print(data)
