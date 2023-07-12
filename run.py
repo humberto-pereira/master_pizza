@@ -40,16 +40,46 @@ class Pizza_Management:
         self.funghi_dict = {'champignon': 0.015, 'ham': 0.04, 'onion': 0.03, 'oregano': 0.003}
         
         self.meat_lovers_dict = {'meat': 0.04, 'onion': 0.03, 'tomatoes': 0.03, 'oregano': 0.003}
-            
+        # Daily fixed costs
+        self.fixed_costs = 385
 
-    def calculate_pizza_cost(self):
+        self.pizzas = {
+            'margherita': self.margherita_dict,
+            'salami': self.salami_dict,
+            'arugula': self.arugula_dict,
+            'chicken': self.chicken_dict,
+            'prosciutto': self.prosciutto_dict,
+            'caprese': self.caprese_dict,
+            'tuna': self.tuna_dict,
+            'hawaii': self.hawaii_dict,
+            'funghi': self.funghi_dict,
+            'meat_lovers': self.meat_lovers_dict
+    }     
+
+    def calculate_pizza_cost(self, pizzas):
         """
-        Calculate pizza cost: (ingredients kg price) * (ingredients)
+        Calculate the cost of multiple pizzas
         """
         self.ingredients_kg_price = SHEET.worksheet('ingredients kg prices').get_all_values()
         # Transform list into dictionary and transform str to float
         ingredients_kg_price_dict = {key: float(value) for key, value in zip (self.ingredients_kg_price[0], self.ingredients_kg_price[1])}
-        return ingredients_kg_price_dict
+
+        ingredients_constant_cost = 0
+        for ingredient, weight in self.ingredients_constant_dict.items():
+            if ingredient in ingredients_kg_price_dict:
+                ingredients_constant_cost += ingredients_kg_price_dict[ingredient] * weight
+
+        pizzas_cost = {}
+        for pizza_name, pizza_dict in pizzas.items():
+            pizza_cost = 0
+            for ingredient, weight in pizza_dict.items():
+                if ingredient in ingredients_kg_price_dict:
+                    pizza_cost += ingredients_kg_price_dict[ingredient] * weight
+            pizza_cost += ingredients_constant_cost
+            pizzas_cost[pizza_name] = pizza_cost
+        return pizzas_cost
+        
+            
         
 
     # def calculate_shopping_list_cost(self):
@@ -66,7 +96,7 @@ class Pizza_Management:
 
          
 test = Pizza_Management()
-pprint(test.calculate_pizza_cost())
+pprint(test.calculate_pizza_cost(test.pizzas))
 
 # pizza_sales = SHEET.worksheet('pizza sales')
 # data = pizza_sales.get_all_values()
