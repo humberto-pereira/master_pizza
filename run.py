@@ -19,6 +19,7 @@ class Pizza_Management:
     """
     def __init__(self):
         self.ingredients_kg_price = []
+        self.pizza_sales = []
         # Dictionaries with key ingredients and respective weight in kg
         self.ingredients_constant_dict = {'flour': 0.35, 'east': 0.003, 'salt': 0.007, 'sugar': 0.010, 'tomato sauce': 0.5, 'cheese': 0.18}
         self.margherita_dict = {'tomatoes': 0.03, 'oregano': 0.003}
@@ -63,7 +64,7 @@ class Pizza_Management:
         self.ingredients_kg_price = SHEET.worksheet('ingredients kg prices').get_all_values()
         # Transform list into dictionary and transform str to float
         ingredients_kg_price_dict = {key: float(value) for key, value in zip (self.ingredients_kg_price[0], self.ingredients_kg_price[1])}
-
+        # Calculate ingredients constant costs using the weight in kg from (ingredients_constant_dict) * (ingredients_kg_price_dict) ingredients kg price
         ingredients_constant_cost = 0
         for ingredient, weight in self.ingredients_constant_dict.items():
             if ingredient in ingredients_kg_price_dict:
@@ -84,7 +85,22 @@ class Pizza_Management:
 
     # def calculate_shopping_list_cost(self):
 
-    # def calculate_pizza_price(self):
+    def calculate_pizza_price(self):
+        """
+        Calculate the pizza price of each pizza 
+        """
+        # Get the last six rows of pizza sales spread sheet
+        self.pizza_sales = SHEET.worksheet('pizza sales').get_all_values()[-6:]
+        # Calculate the daily average sold pizza
+        avg_sold_pizzas = sum(sum(int(cell) for cell in row) for row in self.pizza_sales) /6
+        # Calculate the fixed cost per pizza
+        fixed_cost_per_pizza = self.fixed_costs / avg_sold_pizzas
+        # Call the function passing the 'dictionary of dictionaries'(self.pizzas) to calculate the cost of every pizza
+        pizzas_cost = self.calculate_pizza_cost(self.pizzas)
+        # Add the fixed cost per pizza and a 30% profit to the cost of each pizza and round the price to two decimal places
+        pizzas_price = {pizza_name: round(pizza_cost + fixed_cost_per_pizza +(pizza_cost + fixed_cost_per_pizza) * 0.35, 1) for pizza_name, pizza_cost in pizzas_cost.items()}
+        return pizzas_price
+
 
     # def calculate_day_profit(self):
 
@@ -96,7 +112,7 @@ class Pizza_Management:
 
          
 test = Pizza_Management()
-pprint(test.calculate_pizza_cost(test.pizzas))
+pprint(test.calculate_pizza_price())
 
 # pizza_sales = SHEET.worksheet('pizza sales')
 # data = pizza_sales.get_all_values()
