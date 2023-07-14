@@ -32,10 +32,10 @@ class PizzaManagement:
 
         self.arugula_dict = {'arugula': 0.01, 'parma ham': 0.025, 'oregano': 0.003}
 
-        self.chicken_dict = {'chicken': 0.04, 'champignon': 0.015, 'oregano': 0.003}
+        self.chicken_dict = {'chicken': 0.04, 'mushroom': 0.015, 'oregano': 0.003}
 
         self.prosciutto_dict = {
-            'ham': 0.04, 'champignon': 0.015, 'olives': 0.015, 'oregano': 0.003}
+            'ham': 0.04, 'mushroom': 0.015, 'olives': 0.015, 'oregano': 0.003}
 
         self.caprese_dict = {'tomatoes': 0.03, 'olives': 0.015, 'onion': 0.03, 'oregano': 0.003}
 
@@ -43,7 +43,7 @@ class PizzaManagement:
 
         self.hawaii_dict = {'ham': 0.04, 'pineapple': 0.035}
 
-        self.funghi_dict = {'champignon': 0.015,
+        self.funghi_dict = {'mushroom': 0.015,
                             'ham': 0.04, 'onion': 0.03, 'oregano': 0.003}
 
         self.meat_lovers_dict = {
@@ -159,29 +159,48 @@ class PizzaManagement:
                         ingredients_used[ingredient] = round(weight * int(quantity), 2)
         # Calculate the quantity of constant ingredients used
         total_pizzas_sold = sum([int(quantity) for quantity in last_market_day])
-        print(total_pizzas_sold)
         for ingredient, weight in self.ingredients_constant_dict.items():
             if ingredient in ingredients_used:
                 ingredients_used[ingredient] += round(weight * total_pizzas_sold, 2)
             else:
                 ingredients_used[ingredient] = round(weight * total_pizzas_sold, 2)
-
         return ingredients_used
 
+    def remaining_ingredient_stock(self):
+        """
+        Calculate remaining stock
+        """
+        ingredients_used = self.calculate_ingredients_stock()
+        worksheet = SHEET.worksheet('ingredients stock')
+        stock_data = worksheet.get_all_values()
+        last_row = stock_data[-1]
+        headers = stock_data[0]
+        current_stock = {headers[i]: float(last_row[i]) for i in range(len(headers))}
+        remaining_stock = {ingredient: round(current_stock[ingredient]- ingredients_used.get(ingredient,0), 2) for ingredient in current_stock}
+        return remaining_stock
 
-
+                    
     # def generate_shopping_list(self):
 
 
 test = PizzaManagement()
+test.calculate_ingredients_stock()
+
 pizzas_prices = test.calculate_pizza_price()
-pprint(f'pizzas price \n {pizzas_prices}')
+test.send_dict_to_sheet('pizza selling price', pizzas_prices)
+pprint(f'pizzas price: {pizzas_prices}')
+
+calculate_pizza_cost = test.calculate_pizza_cost(test.pizzas)
+pprint(f'pizza cost to manufacture:{calculate_pizza_cost}')
+
 pizza_profit = test.calculate_profit()
 test.send_dict_to_sheet('profit', pizza_profit)
-pprint(f'pizzas profit \n {pizza_profit}')
-ingredients_stock = test.calculate_ingredients_stock()
-test.send_dict_to_sheet('ingredients stock', ingredients_stock)
-pprint(f'ingredients stock \n {ingredients_stock}')
-test.send_dict_to_sheet('pizza selling price', pizzas_prices)
-print()
-pprint(f'pizza cost to manufacture \n {test.calculate_pizza_cost(test.pizzas)}')
+pprint(f'pizzas profit: {pizza_profit}')
+
+remaining_stock_append = test.remaining_ingredient_stock()
+test.send_dict_to_sheet('ingredients stock', remaining_stock_append)
+pprint(f'remaining stock {remaining_stock_append}')
+
+
+
+
