@@ -72,9 +72,9 @@ class PizzaManagement:
         # Transform list into dictionary and transform str to float
         ingredients_kg_price_dict = {key: float(value) for key, value in zip(self.ingredients_kg_price[0], self.ingredients_kg_price[1])}
         # Get the last six rows of pizza sales spread sheet
-        self.pizza_sales = SHEET.worksheet('pizza sales').get_all_values()[-6:]
+        self.pizza_sales = SHEET.worksheet('pizza sales').get_all_values()[-1]
         # Calculate the daily average sold pizza
-        avg_sold_pizzas = sum(sum(int(cell) for cell in row) for row in self.pizza_sales) / 6
+        avg_sold_pizzas = sum(sum(int(cell) for cell in row) for row in self.pizza_sales)
         # Calculate the fixed cost per pizza
         fixed_cost_per_pizza = round(self.fixed_costs / avg_sold_pizzas, 2)
         # Calculate ingredients constant costs using the weight in kg from (ingredients_constant_dict) * (ingredients_kg_price_dict) ingredients kg price
@@ -134,14 +134,14 @@ class PizzaManagement:
                 revenue = round(pizzas_price[pizza_name] * int(quantity), 2)
                 total_revenue += revenue
                 profit_per_pizza[pizza_name] = round(revenue - (pizza_cost * int(quantity)), 2)
-        # profit contains profit of all pizzas and profit_per_pizza a dictionary with profit per pizza flavor
+        # 'profit' contains profit of all pizzas and 'profit_per_pizza' a dictionary with profit per pizza flavor
         profit = round(total_revenue - total_cost, 2)
         profit_per_pizza.update({'total profit': profit})
         return profit_per_pizza
 
-    def calculate_ingredients_stock(self):
+    def calculate_ingredients_used(self):
         """
-        Calculate the ingredients used to manufacture all sold pizzas and subtract from existing stock values in the worksheet.
+        Calculate the ingredients used to manufacture all sold pizzas.
         """
         # Get the sales data from the 'pizza sales'
         worksheet = SHEET.worksheet('pizza sales')
@@ -168,9 +168,9 @@ class PizzaManagement:
 
     def remaining_ingredient_stock(self):
         """
-        Calculate remaining stock
+        Calculate remaining stock: subtract ingredient used from ingredient stock
         """
-        ingredients_used = self.calculate_ingredients_stock()
+        ingredients_used = self.calculate_ingredients_used()
         worksheet = SHEET.worksheet('ingredients stock')
         stock_data = worksheet.get_all_values()
         last_row = stock_data[-1]
@@ -179,28 +179,65 @@ class PizzaManagement:
         remaining_stock = {ingredient: round(current_stock[ingredient]- ingredients_used.get(ingredient,0), 2) for ingredient in current_stock}
         return remaining_stock
 
-                    
+    def update_market_sales(self):
+        pizza_flavors = ['pizza margherita', 'pizza salami', 'pizza arugula', 'pizza chicken', 'pizza prosciutto', 'pizza caprese', 'pizza tuna', 'pizza hawaii', 'pizza funghi', 'pizza meat lovers']
+        market_sales = {}
+        for flavor in pizza_flavors:
+            sales = input(f'Please input the market sales of {flavor}: ')
+            market_sales[flavor] = int(sales)
+        self.send_dict_to_sheet('pizza sales', market_sales)
+
+    def update_ingredient_stock(self):
+        update_stock = input('would you like to update the ingredient stock? (y/n): ')
+        if update_stock == 'y':
+            print('Please input in kg, separated by period "." example: 1 or 1.5')
+            ingredients = ['flour',	'east',	'olive oil', 'sugar', 'salt', 'tomato sauce', 'cheese',	'ham', 'salami', 'parma ham', 'mushroom', 'pineapple', 'meat', 'chicken', 'arugula', 'tuna', 'tomatoes', 'onion', 'olives',	'oregano']
+            worksheet = SHEET.worksheet('ingredients stock')
+            stock_data = worksheet.get_all_values()
+            headers = stock_data[0]
+            last_row = stock_data[-1]
+            current_stock = {headers[i]: float(last_row[i]) for i in range (len(headers))}
+            new_stock = {}
+            for ingredient in current_stock:
+                stock = input(f'please input the stock to add to your actual ingredient stock: {ingredient}: ')
+                new_stock[ingredient] = current_stock[ingredient] + float(stock)
+            self.send_dict_to_sheet('ingredients stock', new_stock)
+        else:
+            print('Exiting')
+
     # def generate_shopping_list(self):
 
 
 test = PizzaManagement()
-test.calculate_ingredients_stock()
+#first update the user input from the last market day
+test.update_market_sales()
 
-pizzas_prices = test.calculate_pizza_price()
-test.send_dict_to_sheet('pizza selling price', pizzas_prices)
-pprint(f'pizzas price: {pizzas_prices}')
-
-calculate_pizza_cost = test.calculate_pizza_cost(test.pizzas)
-pprint(f'pizza cost to manufacture:{calculate_pizza_cost}')
-
-pizza_profit = test.calculate_profit()
-test.send_dict_to_sheet('profit', pizza_profit)
-pprint(f'pizzas profit: {pizza_profit}')
-
+# second calculate remaining ingredient stock after the market day user imput
+test.remaining_ingredient_stock()
 remaining_stock_append = test.remaining_ingredient_stock()
+
 test.send_dict_to_sheet('ingredients stock', remaining_stock_append)
-pprint(f'remaining stock {remaining_stock_append}')
+
+# Ask if the user bought ingredients and want to update the 'ingredients' stock worksheet
+test.update_ingredient_stock()
 
 
+#pprint(f'remaining stock {remaining_stock_append}')
+
+# pizzas_prices = test.calculate_pizza_price()
+# test.send_dict_to_sheet('pizza selling price', pizzas_prices)
+# pprint(f'pizzas price: {pizzas_prices}')
+
+# calculate_pizza_cost = test.calculate_pizza_cost(test.pizzas)
+# test.send_dict_to_sheet('pizza cost price', calculate_pizza_cost)
+# pprint(f'pizza cost to manufacture:{calculate_pizza_cost}')
+
+# pizza_profit = test.calculate_profit()
+# test.send_dict_to_sheet('profit', pizza_profit)
+# pprint(f'pizzas profit: {pizza_profit}')
+
+
+# second calculate ingredients stock
+#test.calculate_ingredients_used()
 
 
