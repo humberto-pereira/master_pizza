@@ -99,11 +99,16 @@ class PizzaManagement:
         """
         Calculate the pizza price of each pizza 
         """
-        # Call the function passing the 'dictionary of dictionaries'(self.pizzas) to calculate the cost of every pizza
-        pizzas_cost = self.calculate_pizza_cost(self.pizzas)
-        # Add the fixed cost per pizza and a 30% profit to the cost of each pizza and round the price to two decimal places
-        pizzas_price = {pizza_name: round(pizza_cost + pizza_cost * 0.35, 2) for pizza_name, pizza_cost in pizzas_cost.items()}
-        return pizzas_price
+        update_pizza_price = input("Do you want to update the selling price of your pizza? Here's how it works: the pizzeria's fixed cost is divided by the number of pizzas sold on the last market day, the cost of the ingredients used in all the sold pizzas is added, then the total cost is calculated, and a 35% profit is added. If you change the ingredient prices or the number of pizzas sold, the recommended pizza price will also change accordingly.(y/n): ")
+        print('calculating...')
+        if update_pizza_price == 'y':
+            # Call the function passing the 'dictionary of dictionaries'(self.pizzas) to calculate the cost of every pizza
+            pizzas_cost = self.calculate_pizza_cost(self.pizzas)
+            # Add the fixed cost per pizza and a 30% profit to the cost of each pizza and round the price to two decimal places
+            pizzas_price = {pizza_name: round(pizza_cost + pizza_cost * 0.35, 2) for pizza_name, pizza_cost in pizzas_cost.items()}
+            self.send_dict_to_sheet('pizza selling price', pizzas_prices)
+            print('The suggested pizza price has been updated')
+            return pizzas_price
 
     # This method is reusable, it takes two arguments 'sheet_name' which is the name of the worksheet and 'data_dict' a dictionary containing the data to be written
     def send_dict_to_sheet(self, sheet_name, data_dict):
@@ -115,6 +120,7 @@ class PizzaManagement:
         data = [data_dict.get(header, '')for header in headers]
         # Append the data to the next available row
         worksheet.append_row(data)
+        print('worksheet is updating')
 
     def calculate_profit(self):
         """
@@ -137,6 +143,7 @@ class PizzaManagement:
         # 'profit' contains profit of all pizzas and 'profit_per_pizza' a dictionary with profit per pizza flavor
         profit = round(total_revenue - total_cost, 2)
         profit_per_pizza.update({'total profit': profit})
+        self.send_dict_to_sheet('profit', profit_per_pizza)
         return profit_per_pizza
 
     def calculate_ingredients_used(self):
@@ -164,6 +171,7 @@ class PizzaManagement:
                 ingredients_used[ingredient] += round(weight * total_pizzas_sold, 2)
             else:
                 ingredients_used[ingredient] = round(weight * total_pizzas_sold, 2)
+        self.send_dict_to_sheet('ingredients used', ingredients_used)
         return ingredients_used
 
     def remaining_ingredient_stock(self):
@@ -177,17 +185,28 @@ class PizzaManagement:
         headers = stock_data[0]
         current_stock = {headers[i]: float(last_row[i]) for i in range(len(headers))}
         remaining_stock = {ingredient: round(current_stock[ingredient]- ingredients_used.get(ingredient,0), 2) for ingredient in current_stock}
+        self.send_dict_to_sheet('ingredients stock', remaining_stock)
         return remaining_stock
 
     def update_market_sales(self):
-        pizza_flavors = ['pizza margherita', 'pizza salami', 'pizza arugula', 'pizza chicken', 'pizza prosciutto', 'pizza caprese', 'pizza tuna', 'pizza hawaii', 'pizza funghi', 'pizza meat lovers']
-        market_sales = {}
-        for flavor in pizza_flavors:
-            sales = input(f'Please input the market sales of {flavor}: ')
-            market_sales[flavor] = int(sales)
-        self.send_dict_to_sheet('pizza sales', market_sales)
+        """
+        Take last market sales user input and add to the worksheet
+        """
+        market_sales_input = input('Would you like to input the market day sales? (y/n): ')
+        if market_sales_input == 'y':
+            print('Please input in kg, separated by period "." example: 1 or 1.5')
+            pizza_flavors = ['pizza margherita', 'pizza salami', 'pizza arugula', 'pizza chicken', 'pizza prosciutto', 'pizza caprese', 'pizza tuna', 'pizza hawaii', 'pizza funghi', 'pizza meat lovers']
+            market_sales = {}
+            for flavor in pizza_flavors:
+                sales = input(f'Please input the market sales of {flavor}: ')
+                market_sales[flavor] = int(sales)
+            self.calculate_profit()
+            self.send_dict_to_sheet('pizza sales', market_sales)
 
     def update_ingredient_stock(self):
+        """
+        Ask if the user wants to update the ingredients stock, if yes, it take the ingredient input and adds to the worksheet
+        """
         update_stock = input('would you like to update the ingredient stock? (y/n): ')
         if update_stock == 'y':
             print('Please input in kg, separated by period "." example: 1 or 1.5')
@@ -202,38 +221,176 @@ class PizzaManagement:
                 stock = input(f'please input the stock to add to your actual ingredient stock: {ingredient}: ')
                 new_stock[ingredient] = current_stock[ingredient] + float(stock)
             self.send_dict_to_sheet('ingredients stock', new_stock)
+            self.calculate_profit()
         else:
             print('Exiting')
+
+    def update_ingredient_prices(self):
+        """
+        Ask the user if they want to update the ingredient prices and, if yes, take user input for the new prices and update the 'ingredients kg price' worksheet
+        """
+        update_prices = input('Would you like to update the ingredient prices? (y/n): ')
+        if update_prices == 'y':
+            print('please input in currency per kg, separated by period "." example: 5 or 5.55')
+            ingredients = ['flour',	'east',	'olive oil', 'sugar', 'salt', 'tomato sauce', 'cheese',	'ham', 'salami', 'parma ham', 'mushroom', 'pineapple', 'meat', 'chicken', 'arugula', 'tuna', 'tomatoes', 'onion', 'olives',	'oregano']
+            new_prices = {}
+            for ingredient in ingredients:
+                price = input(f'Please input the new price for {ingredient}: ')
+                new_prices[ingredient] = float(price)
+            self.send_dict_to_sheet('ingredients kg prices', new_prices)
+
+    def generate_report(self):
+        """
+        Generate a report from all worksheets
+        """
+        generate_report_input = input(f'Would you like to generate a report? (y/n):')
+        print('')
+        if generate_report_input == 'y':
+            # Pizza sales report
+            worksheet = SHEET.worksheet('pizza sales')
+            pizza_sales_data = worksheet.get_all_values()
+            headers = pizza_sales_data[0]
+            data = pizza_sales_data[-1:]
+            
+            ingredients = []
+            # Iterate over each row of data
+            for row in data:
+                # Iterate over each column in the row
+                for header, value in zip(headers, row):
+                    # Format the ingredient and its values and add it to a list
+                    ingredients.append(f"{header}: {value}")
+                    # Join the list ingredients into a single string separated by slash ' / '
+                    ingredients_str = ' | '.join(ingredients)
+            print('pizza sales:')
+            print(f'{ingredients_str}  \n')
+
+            # Ingredients stock report
+            worksheet = SHEET.worksheet('ingredients stock')
+            ingredients_stock_data = worksheet.get_all_values()
+            headers = ingredients_stock_data[0]
+            data = ingredients_stock_data[-1:]
+            
+            ingredients = []
+            for row in data:
+                for header, value in zip(headers, row):
+                    ingredients.append(f"{header}: {value}")
+                    ingredients_str = ' | '.join(ingredients)
+            print('ingredients stock:')
+            print(f'{ingredients_str}  \n')
+
+            # ingredient kg price report
+            worksheet = SHEET.worksheet('ingredients kg prices')
+            ingredients_kg_price_data = worksheet.get_all_values()
+            headers = ingredients_kg_price_data[0]
+            data = ingredients_kg_price_data[-1:]
+
+            ingredients = []
+            for row in data:
+                for header, value in zip(headers, row):
+                    ingredients.append(f"{header}: {value}")
+                    ingredients_str = ' | '.join(ingredients)
+            print('ingredients kg price:')
+            print(f'{ingredients_str}  \n')
+
+            # ingredients used report
+            worksheet = SHEET.worksheet('ingredients used')
+            ingredients_used_data = worksheet.get_all_values()
+            headers = ingredients_used_data[0]
+            data = pizza_sales_data[-1:]
+
+            ingredients = []
+            for row in data:
+                for header, value in zip(headers, row):
+                    ingredients.append(f"{header}: {value}")
+                    ingredients_str = ' | '.join(ingredients)
+            print('ingredients used:')
+            print(f'{ingredients_str}  \n')
+
+            # pizza selling price
+            worksheet = SHEET.worksheet('pizza selling price')
+            pizza_selling_price_data = worksheet.get_all_values()
+            headers = pizza_selling_price_data [0]
+            data = pizza_selling_price_data [-1:]
+
+            ingredients = []
+            for row in data:
+                for header, value in zip(headers, row):
+                    ingredients.append(f"{header}: {value}")
+                    ingredients_str = ' | '.join(ingredients)
+            print('pizza selling price:')
+            print(f'{ingredients_str}  \n')
+
+            # Pizza cost report
+            worksheet = SHEET.worksheet('pizza cost')
+            pizza_cost_data = worksheet.get_all_values()
+            headers = pizza_cost_data[0]
+            data = pizza_cost_data[-1:]
+
+            ingredients = []
+            for row in data:
+                for header, value in zip(headers, row):
+                    ingredients.append(f"{header}: {value}")
+                    ingredients_str = ' | '.join(ingredients)
+            print('pizza cost:')
+            print(f'{ingredients_str}  \n')
+            
+            # Profit report
+            worksheet = SHEET.worksheet('profit')
+            profit_data = worksheet.get_all_values()
+            headers = profit_data[0]
+            data = profit_data[-1:]
+
+            ingredients = []
+            for row in data:
+                for header, value in zip(headers, row):
+                    ingredients.append(f"{header}: {value}")
+                    ingredients_str = ' | '.join(ingredients)
+            print('profit:')
+            print(f'{ingredients_str}  \n')
+
+            print(f'Thank you for using: Master Pizza Management. \n')
+
+
+            
+    
+    
 
     # def generate_shopping_list(self):
 
 
 test = PizzaManagement()
+test.generate_report()
+# Ask the user if he wants to update the ingredient prices if yes it collect the input and sent to work sheet
+##test.update_ingredient_prices()
+
 #first update the user input from the last market day
-test.update_market_sales()
+##test.update_market_sales()
 
 # second calculate remaining ingredient stock after the market day user imput
-test.remaining_ingredient_stock()
-remaining_stock_append = test.remaining_ingredient_stock()
+##test.remaining_ingredient_stock()
+##remaining_stock_append = test.remaining_ingredient_stock()
 
-test.send_dict_to_sheet('ingredients stock', remaining_stock_append)
+##test.send_dict_to_sheet('ingredients stock', remaining_stock_append)
 
 # Ask if the user bought ingredients and want to update the 'ingredients' stock worksheet
-test.update_ingredient_stock()
+##test.update_ingredient_stock()
+
+
 
 
 #pprint(f'remaining stock {remaining_stock_append}')
 
-# pizzas_prices = test.calculate_pizza_price()
-# test.send_dict_to_sheet('pizza selling price', pizzas_prices)
+##pizzas_prices = test.calculate_pizza_price()
+
+#test.send_dict_to_sheet('pizza selling price', pizzas_prices)
 # pprint(f'pizzas price: {pizzas_prices}')
 
-# calculate_pizza_cost = test.calculate_pizza_cost(test.pizzas)
-# test.send_dict_to_sheet('pizza cost price', calculate_pizza_cost)
-# pprint(f'pizza cost to manufacture:{calculate_pizza_cost}')
+##calculate_pizza_cost = test.calculate_pizza_cost(test.pizzas)
+##test.send_dict_to_sheet('pizza cost', calculate_pizza_cost)
+#pprint(f'pizza cost to manufacture:{calculate_pizza_cost}')
 
-# pizza_profit = test.calculate_profit()
-# test.send_dict_to_sheet('profit', pizza_profit)
+#pizza_profit = test.calculate_profit()
+#test.send_dict_to_sheet('profit', pizza_profit)
 # pprint(f'pizzas profit: {pizza_profit}')
 
 
