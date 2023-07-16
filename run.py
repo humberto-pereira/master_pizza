@@ -1,4 +1,3 @@
-from pprint import pprint
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -106,7 +105,7 @@ class PizzaManagement:
         Calculate the pizza price of each pizza 
         """
         while True:
-            update_pizza_price = input("Do you want to update the selling price of your pizza? Here's how it works: the pizzeria's fixed cost is divided by the number of pizzas sold on the last market day, the cost of the ingredients used in all the sold pizzas is added, then the total cost is calculated, and a 35% profit is added. If you change the ingredient prices or the number of pizzas sold, the recommended pizza price will also change accordingly.(y/n): ")
+            update_pizza_price = input("Do you want to update the selling price of your pizza? Here's how it works: the pizzeria's fixed cost is divided by the number of pizzas sold on the last market day, the cost of the ingredients used in all the sold pizzas is added, then the total cost is calculated, and a 35% profit is added. If you change the ingredient prices or the number of pizzas sold, the recommended pizza price will also change accordingly.(y/n): \n")
             if update_pizza_price == 'y':
                 print('calculating...')
                 # Call the function passing the 'dictionary of dictionaries'(self.pizzas) to calculate the cost of every pizza
@@ -212,13 +211,13 @@ class PizzaManagement:
         Take last market sales user input and add to the worksheet
         """
         while True:
-            market_sales_input = input('Would you like to input the market day sales? (y/n): ').lower()
+            market_sales_input = input('Would you like to input the market day sales? (y/n): \n').lower()
             if market_sales_input == 'y':
                 print(f'Please input in kg, separated by period "." example: 1 or 1.5 \n')
                 pizza_flavors = ['pizza margherita', 'pizza salami', 'pizza arugula', 'pizza chicken', 'pizza prosciutto', 'pizza caprese', 'pizza tuna', 'pizza hawaii', 'pizza funghi', 'pizza meat lovers']
                 market_sales = {}
                 for flavor in pizza_flavors:
-                    sales = self.get_valid_input(f'Please input the market sales of {flavor}: ', float)
+                    sales = self.get_valid_input(f'Please input the market sales of {flavor}: \n', float)
                     market_sales[flavor] = int(sales)
                 self.send_dict_to_sheet('pizza sales', market_sales)
                 break
@@ -233,7 +232,7 @@ class PizzaManagement:
         Ask if the user wants to update the ingredients stock, if yes, it take the ingredient input and adds to the worksheet
         """
         while True:
-            update_stock = input('would you like to update the ingredient stock? (y/n): ').lower()
+            update_stock = input('would you like to update the ingredient stock? (y/n): \n').lower()
             if update_stock == 'y':
                 print('Please input in kg, separated by period "." example: 1 or 1.5')
                 ingredients = ['flour',	'east',	'olive oil', 'sugar', 'salt', 'tomato sauce', 'cheese',	'ham', 'salami', 'parma ham', 'mushroom', 'pineapple', 'meat', 'chicken', 'arugula', 'tuna', 'tomatoes', 'onion', 'olives',	'oregano']
@@ -244,7 +243,7 @@ class PizzaManagement:
                 current_stock = {headers[i]: float(last_row[i]) for i in range (len(headers))}
                 new_stock = {}
                 for ingredient in current_stock:
-                    stock = self.get_valid_input(f'please input the stock to add to your actual ingredient stock: {ingredient}: ', float)
+                    stock = self.get_valid_input(f'please input the stock to add to your actual ingredient stock: {ingredient}: \n', float)
                     new_stock[ingredient] = current_stock[ingredient] + float(stock)
                 self.send_dict_to_sheet('ingredients stock', new_stock)
                 break
@@ -259,13 +258,13 @@ class PizzaManagement:
         Ask the user if they want to update the ingredient prices and, if yes, take user input for the new prices and update the 'ingredients kg price' worksheet
         """
         while True:
-            update_prices = input('Would you like to update the ingredient prices? (y/n): ').lower()
+            update_prices = input('Would you like to update the ingredient prices? (y/n): \n').lower()
             if update_prices == 'y':
                 print('please input in currency per kg, separated by period "." example: 5 or 5.55')
                 ingredients = ['flour',	'east',	'olive oil', 'sugar', 'salt', 'tomato sauce', 'cheese',	'ham', 'salami', 'parma ham', 'mushroom', 'pineapple', 'meat', 'chicken', 'arugula', 'tuna', 'tomatoes', 'onion', 'olives',	'oregano']
                 new_prices = {}
                 for ingredient in ingredients:
-                    price = self.get_valid_input(f'Please input the new price for {ingredient}: ', float)
+                    price = self.get_valid_input(f'Please input the new price for {ingredient}: \n', float)
                     new_prices[ingredient] = float(price)
                 self.send_dict_to_sheet('ingredients kg prices', new_prices)
                 break
@@ -280,7 +279,7 @@ class PizzaManagement:
         Generate a report from all worksheets
         """
         while True:
-            generate_report_input = input(f'Would you like to generate a report? (y/n):').lower()
+            generate_report_input = input(f'Would you like to generate a report? (y/n): \n').lower()
             print('')
             if generate_report_input == 'y':
                 # Pizza sales report
