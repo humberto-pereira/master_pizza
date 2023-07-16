@@ -61,6 +61,7 @@ class PizzaManagement:
             'pizza funghi': self.funghi_dict,
             'pizza meat lovers': self.meat_lovers_dict
         }
+    print('WELCOME TO MASTER PIZZA MANAGEMENT \n')
 
     def calculate_pizza_cost(self, pizzas):
         """
