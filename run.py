@@ -62,6 +62,7 @@ class PizzaManagement:
             'pizza meat lovers': self.meat_lovers_dict
         }
     print('WELCOME TO MASTER PIZZA MANAGEMENT \n')
+    print('The Master Pizza Manager App is your go-to solution for tracking pizza sales, managing ingredient stocks, and calculating pizza costs and prices. It dynamically recommends pizza prices for maximizing profits and provides comprehensive reports on all aspects of your pizzeria business. Streamline your operations with this app and take control of your pizzeria like a master! \n')
 
     def calculate_pizza_cost(self, pizzas):
         """
@@ -191,6 +192,7 @@ class PizzaManagement:
             else:
                 ingredients_used[ingredient] = round(weight * total_pizzas_sold, 2)
         self.send_dict_to_sheet('ingredients used', ingredients_used)
+
         return ingredients_used
 
     def remaining_ingredient_stock(self):

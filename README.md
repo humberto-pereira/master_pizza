@@ -1,32 +1,27 @@
-![CI logo](https://codeinstitute.s3.amazonaws.com/fullstack/ci_logo_small.png)
+# Master Pizza Manager App
 
-Welcome,
+## <a href="https://master-pizza-manager-61f1c0f42ac1.herokuapp.com/" target="_blank">Live version of Master Pizza App</a>
+- The Master Pizza Manager App is a comprehensive pizza sales and costs management tool designed for pizzerias. This app allows the user to effectively track pizza sales, ingredient stock, ingredient costs, and the costs associated with producing individual types of pizzas. It also provides a dynamic pizza selling price recommendation based on the cost of production and a desired profit margin.
 
-This is the Code Institute student template for deploying your third portfolio project, the Python command-line project. The last update to this file was: **March 14, 2023**
+- Key Features:
+Pizza Sales Tracking: The app tracks the number of each type of pizza sold, and keeps this information updated in a 'pizza sales' worksheet.
 
-## Reminders
+- Ingredient Stock Management: The app allows users to keep track of the amount of ingredients left in stock, updating this information in an 'ingredients stock' worksheet.
 
-- Your code must be placed in the `run.py` file
-- Your dependencies must be placed in the `requirements.txt` file
-- Do not edit any of the other files or your code may not deploy properly
+- Ingredient Costs: The app tracks the cost of each ingredient per kilogram in an 'ingredients kg prices' worksheet.
 
-## Creating the Heroku app
+- Pizza Cost Calculation: For each type of pizza, the app calculates the cost of production based on the ingredients used and the cost per kilogram of each ingredient. This information is stored in a 'pizza cost' worksheet.
 
-When you create the app, you will need to add two buildpacks from the _Settings_ tab. The ordering is as follows:
+- Pizza Price Recommendation: The app provides a dynamic selling price recommendation for each type of pizza. This is calculated by adding a fixed cost per pizza (determined by the pizzeria's fixed costs divided by the number of pizzas sold on the last market day) and a 35% profit margin to the cost of each pizza. This information is updated in a 'pizza selling price' worksheet.
 
-1. `heroku/python`
-2. `heroku/nodejs`
+- Profit Calculation: The app calculates the profit for each type of pizza by subtracting the cost from the selling price, and stores this data in a 'profit' worksheet.
 
-You must then create a _Config Var_ called `PORT`. Set this to `8000`
+- Reporting: The app generates comprehensive reports, providing the user with a clear overview of their pizza business. It can display reports on pizza sales, ingredient stock, ingredient costs, pizza costs, recommended selling prices, and profit.
 
-If you have credentials, such as in the Love Sandwiches project, you must create another _Config Var_ called `CREDS` and paste the JSON into the value field.
+- Automated Worksheet Updating: The app can automatically send updated data to the relevant worksheets, keeping all records up-to-date.
 
-Connect your GitHub repository and deploy as normal.
+- In conclusion, the Master Pizza Manager App is a powerful tool that simplifies pizza sales and cost management, allowing pizzerias to effectively monitor their operations, reduce waste, and maximize profit.
 
-## Constraints
 
-The deployment terminal is set to 80 columns by 24 rows. That means that each line of text needs to be 80 characters or less otherwise it will be wrapped onto a second line.
 
----
 
-Happy coding!
